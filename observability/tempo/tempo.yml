@@ -38,6 +38,9 @@ metrics_generator:
       dimensions: [http.method, http.request.method]
     span_metrics:
       dimensions: [http.method, http.request.method, http.route, http.status_code, http.response.status_code]
+    local_blocks:
+      filter_server_spans: false
+      flush_to_storage: true
 
 storage:
   trace:
@@ -50,4 +53,4 @@ storage:
 overrides:
   defaults:
     metrics_generator:
-      processors: [service-graphs, span-metrics]
+      processors: [service-graphs, span-metrics, local-blocks]
