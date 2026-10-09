@@ -15,7 +15,7 @@ spring:
             maxAge: 3600
       routes:
         - id: auth-service-route
-          uri: http://host.docker.internal:4005
+          uri: http://auth-service:4005
           predicates:
             - Path=/auth/**
           filters:
@@ -23,7 +23,7 @@ spring:
 
         # Route for /api/patients/** to patient-service
         - id: patient-service-route
-          uri: http://host.docker.internal:4000
+          uri: http://patient-service:4000
           predicates:
             - Path=/api/patients/**
           filters:
@@ -32,14 +32,14 @@ spring:
 
         # Route for /api/docs/patients to patient-service /v3/api-docs
         - id: api-docs-patient-route
-          uri: http://host.docker.internal:4000
+          uri: http://patient-service:4000
           predicates:
             - Path=/api-docs/patients
           filters:
             - RewritePath=/api-docs/patients,/v3/api-docs
 
         - id: api-docs-auth-route
-          uri: http://host.docker.internal:4005
+          uri: http://auth-service:4005
           predicates:
             - Path=/api-docs/auth
           filters:
