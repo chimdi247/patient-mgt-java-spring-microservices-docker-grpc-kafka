@@ -72,7 +72,7 @@ Thumbs.db
 *.keystore
 
 # Docker
-/docker/
+
 docker-compose.yml
 /docker-compose.override.yml
 
