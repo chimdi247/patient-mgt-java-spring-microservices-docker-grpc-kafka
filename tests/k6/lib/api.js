@@ -47,7 +47,7 @@ export const deletePatient = (token, id, opts = {}) =>
 // ----------------------------------------------------------------------------- data generation
 /** A valid, unique patient. The perf+ e-mail prefix lets tests/cleanup.sh remove it afterwards. */
 export function newPatient(tag = 'x') {
-  const uniq = `${Date.now().toString(36)}-${__VU}-${__ITER}-${Math.floor(Math.random() * 1e6).toString(36)}`;
+  const uniq = `${Date.now().toString(36)}-${__VU}-${typeof __ITER === "undefined" ? 0 : __ITER}-${Math.floor(Math.random() * 1e6).toString(36)}`;
   return {
     name: `Perf Patient ${tag}`,
     email: `perf+${uniq}@example.com`,
