@@ -62,7 +62,7 @@ Thumbs.db
 **/lombok.config
 
 # Application-specific
-.env
+
 *.key
 *.pem
 *.p12
@@ -86,7 +86,7 @@ docker-compose.yml
 .aws/
 
 # --- docker compose platform
-.env
+
 node_modules/
 dist/
 tests/results/*
