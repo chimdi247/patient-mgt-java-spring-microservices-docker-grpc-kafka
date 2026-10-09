@@ -5,14 +5,21 @@
 #   tests/run.sh <test> [extra k6 args]
 #
 #   smoke        1 min, 2 VUs: full patient lifecycle + auth / validation / security negatives   (CI gate)
-#   load         ~8 min, ramp to LOAD_VUS (20)                                                    (SLO check)
+#   load         ~8 min, ramp to LOAD_VUS (20) or  LOAD_VUS=50 tests/run.sh load           (SLO check)
 #   stress       ~20 min, steps up to PEAK_VUS (100), then recovery
 #   spike        ~6 min, 5 -> 120 -> 5 VUs
-#   soak         1 h (DURATION=4h ...), constant SOAK_VUS (10)
+#   soak         1 h (DURATION=4h ...), constant SOAK_VUS (10) or DURATION=15m tests/run.sh soak
 #   breakpoint   ~15 min, rising arrival rate until the SLOs break (self-aborting)
 #   burst        2 min + drain: patient registrations -> gRPC billing -> Kafka -> analytics lag
 #   read-heavy   ~6 min, read-only workload (SEED=2000 for a big table)
 #   suite        smoke -> load -> spike -> burst (about 20 min, stops at the first failure)
+
+## To keep going even when a test fails, use ; instead of &&:
+
+## for t in smoke load stress spike burst read-heavy breakpoint; do tests/run.sh $t; done
+
+## to run all tests at once
+#  tests/run.sh suite && tests/run.sh read-heavy && tests/run.sh stress && tests/run.sh breakpoint
 #
 # Tune with environment variables, e.g.   LOAD_VUS=50 HOLD=10m tests/run.sh load
 set -euo pipefail
