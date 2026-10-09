@@ -9,7 +9,7 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOriginPatterns: "http://localhost:*"
+            allowedOriginPatterns: "http://34.171.152.81:*"
             allowedMethods: "*"
             allowedHeaders: "*"
             maxAge: 3600
