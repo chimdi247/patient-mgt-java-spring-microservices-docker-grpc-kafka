@@ -1,0 +1,179 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: Resource utilisation
+    folder: Patient Management Alerts
+    interval: 30s
+    rules:
+      - uid: pm-container-cpu-gt-50
+        title: Container CPU above 50%
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              expr: '100 * sum by (service) (label_replace(rate(container_cpu_usage_seconds_total{name!=""}[2m]), "service", "$$1", "name", "(.*)")) / sum by (service) (label_replace(container_spec_cpu_quota{name!=""} / container_spec_cpu_period{name!=""}, "service", "$$1", "name", "(.*)") > 0)'
+              instant: true
+              range: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+              settings: { mode: dropNN }
+          - refId: C
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [50] }
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: 'Container {{ $$labels.service }} is using {{ printf "%.0f" $$values.B.Value }}% of its CPU limit'
+          description: 'CPU usage relative to the container CPU limit has been above 50% for 2 minutes.'
+          dashboard_uid: pm-overview
+        labels:
+          severity: warning
+          scope: container
+        isPaused: false
+      - uid: pm-container-memory-gt-50
+        title: Container memory above 50%
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              expr: '100 * sum by (service) (label_replace(container_memory_working_set_bytes{name!=""}, "service", "$$1", "name", "(.*)")) / sum by (service) (label_replace(container_spec_memory_limit_bytes{name!=""}, "service", "$$1", "name", "(.*)") > 0)'
+              instant: true
+              range: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+              settings: { mode: dropNN }
+          - refId: C
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [50] }
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: 'Container {{ $$labels.service }} is using {{ printf "%.0f" $$values.B.Value }}% of its memory limit'
+          description: 'Working-set memory relative to the container memory limit has been above 50% for 2 minutes.'
+          dashboard_uid: pm-overview
+        labels:
+          severity: warning
+          scope: container
+        isPaused: false
+      - uid: pm-node-cpu-gt-50
+        title: Node CPU above 50%
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              expr: '100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)'
+              instant: true
+              range: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+              settings: { mode: dropNN }
+          - refId: C
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [50] }
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: 'Node {{ $$labels.instance }} CPU is at {{ printf "%.0f" $$values.B.Value }}%'
+          description: 'Host (docker node) CPU utilisation has been above 50% for 2 minutes.'
+          dashboard_uid: pm-overview
+        labels:
+          severity: warning
+          scope: node
+        isPaused: false
+      - uid: pm-node-memory-gt-50
+        title: Node memory above 50%
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              expr: '100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)'
+              instant: true
+              range: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+              settings: { mode: dropNN }
+          - refId: C
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [50] }
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: 'Node {{ $$labels.instance }} memory is at {{ printf "%.0f" $$values.B.Value }}%'
+          description: 'Host (docker node) memory utilisation has been above 50% for 2 minutes.'
+          dashboard_uid: pm-overview
+        labels:
+          severity: warning
+          scope: node
+        isPaused: false

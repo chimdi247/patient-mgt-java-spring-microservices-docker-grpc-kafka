@@ -1,0 +1,179 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: Data platform
+    folder: Patient Management Alerts
+    interval: 30s
+    rules:
+      - uid: pm-postgres-down
+        title: PostgreSQL is down
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              expr: 'pg_up'
+              instant: true
+              range: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+              settings: { mode: dropNN }
+          - refId: C
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        noDataState: Alerting
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: 'PostgreSQL is not reachable by postgres-exporter'
+          description: 'pg_up has been 0 (or missing) for 1 minute. All services that use the database will start failing.'
+          dashboard_uid: pm-postgres
+        labels:
+          severity: critical
+          scope: postgres
+        isPaused: false
+      - uid: pm-postgres-connections-gt-80
+        title: PostgreSQL connections above 80%
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              expr: '100 * sum(pg_stat_database_numbackends) / 100'
+              instant: true
+              range: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+              settings: { mode: dropNN }
+          - refId: C
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [80] }
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: 'PostgreSQL is using {{ printf "%.0f" $$values.B.Value }}% of max_connections'
+          description: 'Open backends / max_connections (100) has been above 80% for 2 minutes. Check Hikari pool sizes and long-running transactions.'
+          dashboard_uid: pm-postgres
+        labels:
+          severity: warning
+          scope: postgres
+        isPaused: false
+      - uid: pm-kafka-down
+        title: Kafka broker is down
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              expr: 'max(kafka_brokers)'
+              instant: true
+              range: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+              settings: { mode: dropNN }
+          - refId: C
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        noDataState: Alerting
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: 'No Kafka broker is visible to kafka-exporter'
+          description: 'kafka_brokers has been 0 (or missing) for 1 minute. Balance updates and notifications are not flowing.'
+          dashboard_uid: pm-kafka
+        labels:
+          severity: critical
+          scope: kafka
+        isPaused: false
+      - uid: pm-kafka-consumer-lag-gt-100
+        title: Kafka consumer lag above 100
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              expr: 'sum by (consumergroup, topic) (kafka_consumergroup_lag)'
+              instant: true
+              range: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+              settings: { mode: dropNN }
+          - refId: C
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [100] }
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: 'Consumer group {{ $$labels.consumergroup }} is {{ printf "%.0f" $$values.B.Value }} messages behind on {{ $$labels.topic }}'
+          description: 'A consumer group has been more than 100 messages behind for 2 minutes. Balances / notifications are being delayed.'
+          dashboard_uid: pm-kafka
+        labels:
+          severity: warning
+          scope: kafka
+        isPaused: false

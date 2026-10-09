@@ -1,0 +1,12 @@
+apiVersion: 1
+providers:
+  - name: Patient Management
+    orgId: 1
+    folder: Patient Management
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/dashboards
+      foldersFromFilesStructure: false

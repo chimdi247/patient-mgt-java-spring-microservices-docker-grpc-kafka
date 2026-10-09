@@ -1,0 +1,56 @@
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/fraunces";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* "Clinic light": deep teal ink on a cool, slightly green paper; mint is the single accent, coral flags attention. */
+    --background: 165 22% 96.5%;
+    --foreground: 192 42% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 192 42% 11%;
+    --primary: 190 60% 13%;
+    --primary-foreground: 165 30% 97%;
+    --secondary: 165 18% 92%;
+    --secondary-foreground: 192 40% 15%;
+    --muted: 165 16% 92%;
+    --muted-foreground: 192 14% 38%;
+    --accent: 166 62% 46%;
+    --accent-foreground: 190 62% 8%;
+    --destructive: 4 70% 47%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 156 62% 29%;
+    --success-foreground: 0 0% 100%;
+    --coral: 14 88% 60%;
+    --border: 165 16% 86%;
+    --input: 165 15% 81%;
+    --ring: 166 62% 38%;
+    --radius: 0.75rem;
+
+    --sidebar: 191 58% 9%;
+    --sidebar-foreground: 165 25% 90%;
+    --sidebar-muted: 188 16% 62%;
+  }
+
+  * { @apply border-border; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-background text-foreground antialiased font-sans; }
+  h1, h2, h3 { @apply font-display tracking-tight; }
+  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
+}
+
+@layer utilities {
+  .tnum { font-variant-numeric: tabular-nums; }
+  .pulse-grid {
+    background-image:
+      linear-gradient(hsl(0 0% 100% / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(0 0% 100% / 0.045) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

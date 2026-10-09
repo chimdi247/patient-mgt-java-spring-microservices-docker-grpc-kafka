@@ -1,0 +1,73 @@
+# Prometheus
+#  * app metrics (OTel agent + custom business metrics) via the OTel Collector (:8889)
+#  * containers -> cAdvisor, node -> node-exporter, uptime -> blackbox probes of /actuator/health
+#  * Tempo remote-writes span-metrics + service-graph metrics
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: patient-platform
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: otel-collector
+    honor_labels: true
+    static_configs:
+      - targets: ["otel-collector:8889"]
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  - job_name: node-exporter
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  - job_name: tempo
+    static_configs:
+      - targets: ["tempo:3200"]
+
+  - job_name: loki
+    static_configs:
+      - targets: ["loki:3100"]
+
+  - job_name: grafana
+    static_configs:
+      - targets: ["grafana:3000"]
+
+  # PostgreSQL (postgres-exporter) - connections, transactions, cache hit ratio, locks, table sizes ...
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  # Kafka (kafka-exporter) - topics, offsets, partitions, ISR, consumer-group lag
+  - job_name: kafka
+    static_configs:
+      - targets: ["kafka-exporter:9308"]
+
+  # uptime / availability SLI: probe_success{service_name="..."}
+  - job_name: blackbox-health
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets: ["http://api-gateway:4004/actuator/health"]
+        labels: { service_name: api-gateway }
+      - targets: ["http://auth-service:4005/actuator/health"]
+        labels: { service_name: auth-service }
+      - targets: ["http://patient-service:4000/actuator/health"]
+        labels: { service_name: patient-service }
+      - targets: ["http://billing-service:4001/actuator/health"]
+        labels: { service_name: billing-service }
+      - targets: ["http://analytics-service:4002/actuator/health"]
+        labels: { service_name: analytics-service }
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
