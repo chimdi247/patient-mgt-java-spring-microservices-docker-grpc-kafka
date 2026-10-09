@@ -10,9 +10,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": { target: "http://localhost:4004", changeOrigin: true },
-      "/auth": { target: "http://localhost:4004", changeOrigin: true },
-      "/api-docs": { target: "http://localhost:4004", changeOrigin: true },
+      "/api": { target: "http://34.171.152.81:4004", changeOrigin: true },
+      "/auth": { target: "http://34.171.152.81:4004", changeOrigin: true },
+      "/api-docs": { target: "http://34.171.152.81:4004", changeOrigin: true },
     },
   },
 });
